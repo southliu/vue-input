@@ -8,13 +8,10 @@ const value = ref('');
 <template>
   <Input
     v-model="value"
+    :clearable="true"
     placeholder="请输入"
   />
   <div>
     value: {{ value }}
   </div>
 </template>
-
-<style scoped>
-
-</style>

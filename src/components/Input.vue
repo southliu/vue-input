@@ -1,5 +1,10 @@
 <template>
-  <div class="s-input" :class="styleClass">
+  <div
+    class="s-input"
+    @mouseenter="isFocus = true"
+    @mouseleave="isFocus = false"
+    :class="styleClass"
+  >
     <input
       class="s-input__inner"
       :value="props.modelValue"
@@ -7,16 +12,27 @@
       :disabled="props.disabled"
       v-bind="attrs"
     />
+
+    <div
+      v-if="props.clearable && isClearable"
+      v-show="isFocus"
+      class="s-input__suffix"
+      @click="handleClear"
+    >
+      <CloseIcon class="close-icon" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue';
+import { ref, computed, useAttrs } from 'vue';
+import CloseIcon from './CloseIcon.vue'
 
 interface InputProps {
   modelValue?: string | number;
   disabled?: boolean;
   size?: string;
+  clearable?: boolean;
 };
 
 //组件发送事件类型
@@ -27,6 +43,9 @@ type InputEmits = {
 const attrs = useAttrs();
 
 const emit = defineEmits<InputEmits>();
+
+const isFocus = ref(true);
+const isClearable = ref(false);
 
 const props = withDefaults(defineProps<InputProps>(), {
   modelValue: '',
@@ -43,7 +62,17 @@ const styleClass = computed(() => {
 
 // 处理输入框内容变化
 const handleChangeInput = (event: Event) => {
+  //可清除clearable
+  (event.target as HTMLInputElement).value
+    ? (isClearable.value = true)
+    : (isClearable.value = false);
+
   emit("update:modelValue", (event.target as HTMLInputElement).value);
+};
+
+// 处理清除操作
+const handleClear = () => {
+  emit("update:modelValue", '');
 };
 </script>
 
@@ -77,6 +106,25 @@ const handleChangeInput = (event: Event) => {
     &:focus {
       border: 1px solid #409eff;
     }
+  }
+
+  
+  .s-input__suffix,
+  .s-input__prefix {
+      position: absolute;
+      right: 10px;
+      height: 100%;
+      top: 0;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: #c0c4cc;
+      font-size: 15px;
+  }
+
+  .close-icon {
+    width: 20px;
+    height: 20px;
   }
 }
 
