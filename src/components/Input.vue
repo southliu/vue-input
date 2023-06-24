@@ -1,5 +1,17 @@
 <template>
+  <div class="s-textarea" v-if="type === 'textarea'">
+    <textarea
+      class="s-textarea__inner"
+      :style="textareaStyle"
+      v-bind="attrs"
+      ref="textarea"
+      :value="modelValue"
+      @input="handleChangeInput"
+    />
+  </div>
+
   <div
+    v-else
     class="s-input"
     @mouseenter="isFocus = true"
     @mouseleave="isFocus = false"
@@ -46,7 +58,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, useSlots, useAttrs } from 'vue';
+import {
+  ref,
+  watch,
+  computed,
+  useSlots,
+  useAttrs,
+  shallowRef,
+  nextTick
+} from 'vue';
+import { calcTextareaHeight, isObject } from '../utils/helper';
 import CloseIcon from './CloseIcon.vue'
 import EyeIcon from './EyeIcon.vue'
 
@@ -56,10 +77,16 @@ interface InputProps {
   type?: string;
   size?: string;
   clearable?: boolean;
+  autosize?: boolean | AutosizeObj;
 };
 
 type InputEmits = {
   (e: 'update:modelValue', value: string): void;
+};
+
+type AutosizeObj = {
+    minRows?: number
+    maxRows?: number
 };
 
 defineOptions({
@@ -81,6 +108,8 @@ const inputRef = ref();
 const isFocus = ref(true);
 const isClearable = ref(false);
 const eyeIcon = ref('browse');
+const textareaStyle = ref<any>()
+const textarea = shallowRef<HTMLTextAreaElement>()
 
 Promise.resolve().then(() => {
   if (props.type === 'password') {
@@ -97,7 +126,7 @@ const isShowEye = computed(() => {
 const styleClass = computed(() => {
   return {
     'is-disabled': props.disabled,
-    [`k-input--${props.size}`]: props.size,
+    [`s-input--${props.size}`]: props.size,
   };
 });
 
@@ -109,6 +138,16 @@ const isShowSuffixIcon = computed(() => {
 const isShowPrefixIcon = computed(() => {
   return slots.prefix;
 });
+
+watch(() => props.modelValue, () => {
+    if (attrs.type === 'textarea' && props.autosize) {
+        const minRows = isObject(props.autosize) ? (props.autosize as AutosizeObj).minRows : undefined
+        const maxRows = isObject(props.autosize) ? (props.autosize as AutosizeObj).maxRows : undefined
+        nextTick(() => {
+            textareaStyle.value = calcTextareaHeight(textarea.value!, minRows, maxRows)
+        });
+    };
+}, { immediate: true });
 
 // 处理输入框内容变化
 const handleChangeInput = (event: Event) => {
@@ -252,5 +291,36 @@ const handleChangeEye = () => {
 
 .no-cursor {
   cursor: default !important;
+}
+
+.s-textarea {
+  width: 100%;
+
+  .s-textarea__inner {
+    display: block;
+    padding: 5px 15px;
+    line-height: 1.5;
+    box-sizing: border-box;
+    width: 100%;
+    font-size: inherit;
+    color: #606266;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+
+    &::placeholder {
+      color: #c2c2ca;
+    }
+
+    &:hover {
+      border: 1px solid #c0c4cc;
+    }
+
+    &:focus {
+      outline: none;
+      border: 1px solid #409eff;
+    }
+  }
 }
 </style>

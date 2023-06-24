@@ -1,27 +1,34 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Input from './components/Input.vue';
-import CloseIcon from './components/CloseIcon.vue'
-import EyeIcon from './components/EyeIcon.vue'
 
 const value = ref('');
+const textareaValue = ref('');
 </script>
 
 <template>
-  <Input
-    v-model="value"
-    :clearable="false"
-    placeholder="请输入"
-  >
-    <template #suffix>
-      <CloseIcon style="width: 20px; height: 20px;" />
-    </template>
-    <template #prefix>
-      <EyeIcon style="width: 20px; height: 20px;" />
-    </template>
-  </Input>
+  <div>
+    <Input
+      v-model="value"
+      :clearable="true"
+      placeholder="请输入"
+    />
+  </div>
+
+  <div style="width: 400px; margin-top: 20px;">
+    <Input
+      v-model="textareaValue"
+      :autosize="{ minRows: 2 }"
+      type="textarea"
+      placeholder="请输入内容"
+    />
+  </div>
 
   <div style="margin-top: 10px;">
     value: {{ value }}
+  </div>
+
+  <div style="margin-top: 10px;">
+    textareaValue: {{ textareaValue }}
   </div>
 </template>
