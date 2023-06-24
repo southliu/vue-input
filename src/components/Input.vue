@@ -6,20 +6,29 @@
     :class="styleClass"
   >
     <input
+      ref="inputRef"
       class="s-input__inner"
-      :value="props.modelValue"
+      :value="modelValue"
       @input="handleChangeInput"
-      :disabled="props.disabled"
+      :disabled="disabled"
       v-bind="attrs"
     />
 
     <div
-      v-if="props.clearable && isClearable"
-      v-show="isFocus"
+      v-if="clearable && isClearable && !isShowEye"
+      v-show="isFocus && modelValue !== ''  && modelValue !== null"
       class="s-input__suffix"
       @click="handleClear"
     >
-      <CloseIcon class="close-icon" />
+      <CloseIcon class="icon" />
+    </div>
+
+    <div class="s-input__suffix" v-show="isShowEye">
+      <EyeIcon
+        class="icon"
+        :type="eyeIcon"
+        @click="handleChangeEye"
+      />
     </div>
   </div>
 </template>
@@ -27,38 +36,57 @@
 <script setup lang="ts">
 import { ref, computed, useAttrs } from 'vue';
 import CloseIcon from './CloseIcon.vue'
+import EyeIcon from './EyeIcon.vue'
 
 interface InputProps {
   modelValue?: string | number;
   disabled?: boolean;
+  type?: string;
   size?: string;
   clearable?: boolean;
 };
 
-//组件发送事件类型
 type InputEmits = {
-  (e: "update:modelValue", value: string): void;
+  (e: 'update:modelValue', value: string): void;
 };
+
+defineOptions({
+  name: 'BasicInput'
+});
 
 const attrs = useAttrs();
 
 const emit = defineEmits<InputEmits>();
 
-const isFocus = ref(true);
-const isClearable = ref(false);
-
 const props = withDefaults(defineProps<InputProps>(), {
   modelValue: '',
+  type: 'text',
   size: 'default'
+});
+
+const inputRef = ref();
+const isFocus = ref(true);
+const isClearable = ref(false);
+const eyeIcon = ref('browse');
+
+Promise.resolve().then(() => {
+  if (props.type === 'password') {
+    inputRef.value.type = 'password';
+  };
+});
+
+const isShowEye = computed(() => {
+  return (
+    props.type === 'password' && props.modelValue
+  );
 });
 
 const styleClass = computed(() => {
   return {
-    "is-disabled": props.disabled,
+    'is-disabled': props.disabled,
     [`k-input--${props.size}`]: props.size,
   };
 });
-
 
 // 处理输入框内容变化
 const handleChangeInput = (event: Event) => {
@@ -67,12 +95,24 @@ const handleChangeInput = (event: Event) => {
     ? (isClearable.value = true)
     : (isClearable.value = false);
 
-  emit("update:modelValue", (event.target as HTMLInputElement).value);
+  emit('update:modelValue', (event.target as HTMLInputElement).value);
 };
 
 // 处理清除操作
 const handleClear = () => {
-  emit("update:modelValue", '');
+  emit('update:modelValue', '');
+};
+
+// 切换密码可视状态
+const handleChangeEye = () => {
+  if (inputRef.value.type === 'password') {
+    eyeIcon.value = 'eye-close';
+    inputRef.value.type = attrs.type || 'text';
+    return;
+  }
+
+  inputRef.value.type = 'password';
+  eyeIcon.value = 'browse';
 };
 </script>
 
@@ -122,7 +162,7 @@ const handleClear = () => {
       font-size: 15px;
   }
 
-  .close-icon {
+  .icon {
     width: 20px;
     height: 20px;
   }
