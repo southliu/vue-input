@@ -8,6 +8,10 @@
     <input
       ref="inputRef"
       class="s-input__inner"
+      :class="{
+        'icon-space': isClearable || isShowEye || isShowSuffixIcon,
+        'pref-space': isShowPrefixIcon
+      }"
       :value="modelValue"
       @input="handleChangeInput"
       :disabled="disabled"
@@ -30,11 +34,19 @@
         @click="handleChangeEye"
       />
     </div>
+
+
+    <div class="s-input__prefix" v-if="isShowPrefixIcon">
+      <slot name="prefix" />
+    </div>
+    <div class="s-input__suffix no-cursor" v-if="isShowSuffixIcon">
+      <slot name="suffix" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, useAttrs } from 'vue';
+import { ref, computed, useSlots, useAttrs } from 'vue';
 import CloseIcon from './CloseIcon.vue'
 import EyeIcon from './EyeIcon.vue'
 
@@ -54,8 +66,6 @@ defineOptions({
   name: 'BasicInput'
 });
 
-const attrs = useAttrs();
-
 const emit = defineEmits<InputEmits>();
 
 const props = withDefaults(defineProps<InputProps>(), {
@@ -63,6 +73,9 @@ const props = withDefaults(defineProps<InputProps>(), {
   type: 'text',
   size: 'default'
 });
+
+const attrs = useAttrs();
+const slots = useSlots();
 
 const inputRef = ref();
 const isFocus = ref(true);
@@ -86,6 +99,15 @@ const styleClass = computed(() => {
     'is-disabled': props.disabled,
     [`k-input--${props.size}`]: props.size,
   };
+});
+
+
+//带Icon输入框
+const isShowSuffixIcon = computed(() => {
+  return slots.suffix && !props.clearable && props.type !== 'password';
+});
+const isShowPrefixIcon = computed(() => {
+  return slots.prefix;
 });
 
 // 处理输入框内容变化
@@ -162,6 +184,25 @@ const handleChangeEye = () => {
       font-size: 15px;
   }
 
+  .s-input--prefix.s-input__inner {
+    padding-left: 30px;
+  }
+
+  .s-input__prefix {
+    position: absolute;
+    width: 20px;
+    cursor: default !important;
+    left: 10px;
+  }
+
+  .pref-space {
+    padding-left: 35px !important;
+  }
+
+  .icon-space {
+    padding-right: 35px !important;
+  }
+
   .icon {
     width: 20px;
     height: 20px;
@@ -207,5 +248,9 @@ const handleChangeEye = () => {
       font-size: 13px;
     }
   }
+}
+
+.no-cursor {
+  cursor: default !important;
 }
 </style>
