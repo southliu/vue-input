@@ -17,6 +17,10 @@
     @mouseleave="isFocus = false"
     :class="styleClass"
   >
+    <div class="s-input__prepend" v-if="slots.prepend">
+      <slot name="prepend" />
+    </div>
+
     <input
       ref="inputRef"
       class="s-input__inner"
@@ -29,6 +33,10 @@
       :disabled="disabled"
       v-bind="attrs"
     />
+
+    <div class="s-input__append" v-if="slots.append">
+      <slot name="append" />
+    </div>
 
     <div
       v-if="clearable && isClearable && !isShowEye"
@@ -46,7 +54,6 @@
         @click="handleChangeEye"
       />
     </div>
-
 
     <div class="s-input__prefix" v-if="isShowPrefixIcon">
       <slot name="prefix" />
@@ -68,8 +75,8 @@ import {
   nextTick
 } from 'vue';
 import { calcTextareaHeight, isObject } from '../utils/helper';
-import CloseIcon from './CloseIcon.vue'
-import EyeIcon from './EyeIcon.vue'
+import CloseIcon from './CloseIcon.vue';
+import EyeIcon from './EyeIcon.vue';
 
 interface InputProps {
   modelValue?: string | number;
@@ -108,13 +115,13 @@ const inputRef = ref();
 const isFocus = ref(true);
 const isClearable = ref(false);
 const eyeIcon = ref('browse');
-const textareaStyle = ref<any>()
-const textarea = shallowRef<HTMLTextAreaElement>()
+const textareaStyle = ref<any>();
+const textarea = shallowRef<HTMLTextAreaElement>();
 
 Promise.resolve().then(() => {
   if (props.type === 'password') {
     inputRef.value.type = 'password';
-  };
+  }
 });
 
 const isShowEye = computed(() => {
@@ -127,9 +134,10 @@ const styleClass = computed(() => {
   return {
     'is-disabled': props.disabled,
     [`s-input--${props.size}`]: props.size,
+    ["s-input-group s-input-prepend"]: slots.prepend,
+    ["s-input-group s-input-append"]: slots.append,
   };
 });
-
 
 //带Icon输入框
 const isShowSuffixIcon = computed(() => {
@@ -141,12 +149,12 @@ const isShowPrefixIcon = computed(() => {
 
 watch(() => props.modelValue, () => {
     if (attrs.type === 'textarea' && props.autosize) {
-        const minRows = isObject(props.autosize) ? (props.autosize as AutosizeObj).minRows : undefined
-        const maxRows = isObject(props.autosize) ? (props.autosize as AutosizeObj).maxRows : undefined
+        const minRows = isObject(props.autosize) ? (props.autosize as AutosizeObj).minRows : undefined;
+        const maxRows = isObject(props.autosize) ? (props.autosize as AutosizeObj).maxRows : undefined;
         nextTick(() => {
-            textareaStyle.value = calcTextareaHeight(textarea.value!, minRows, maxRows)
+            textareaStyle.value = calcTextareaHeight(textarea.value!, minRows, maxRows);
         });
-    };
+    }
 }, { immediate: true });
 
 // 处理输入框内容变化
@@ -208,7 +216,6 @@ const handleChangeEye = () => {
       border: 1px solid #409eff;
     }
   }
-
   
   .s-input__suffix,
   .s-input__prefix {
@@ -321,6 +328,44 @@ const handleChangeEye = () => {
       outline: none;
       border: 1px solid #409eff;
     }
+  }
+}
+
+.s-input.s-input-group.s-input-append,
+.s-input.s-input-group.s-input-prepend {
+  line-height: normal;
+  display: inline-table;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  .s-input__inner {
+    border-radius: 0 4px 4px 0;
+  }
+
+  .s-input__prepend,
+  .s-input__append {
+    background-color: #f5f7fa;
+    color: #909399;
+    vertical-align: middle;
+    display: table-cell;
+    position: relative;
+    border: 1px solid #dcdfe6;
+    border-radius: 4 0px 0px 4px;
+    padding: 0 20px;
+    width: 1px;
+    white-space: nowrap;
+  }
+
+  .s-input__append {
+    border-radius: 0 4px 4px 0px;
+  }
+}
+
+.s-input.s-input-group.s-input-append {
+  .s-input__inner {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
   }
 }
 </style>

@@ -12,16 +12,22 @@ const textareaValue = ref('');
       v-model="value"
       :clearable="true"
       placeholder="请输入"
+      :maxlength="3"
     />
   </div>
 
   <div style="width: 400px; margin-top: 20px;">
     <Input
       v-model="textareaValue"
-      :autosize="{ minRows: 2 }"
-      type="textarea"
       placeholder="请输入内容"
-    />
+    >
+      <template #prepend>
+        http://
+      </template>
+      <template #append>
+        .com
+      </template>
+    </Input>
   </div>
 
   <div style="margin-top: 10px;">
